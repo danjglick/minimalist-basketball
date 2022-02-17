@@ -1,15 +1,3 @@
-let canvas
-let context
-let ball = {
-  xPos: visualViewport.width / 2,
-  yPos: visualViewport.height - 50,
-  xSpeed: 0,
-  ySpeed: 0
-}
-let touchstart = {
-  xPos: 0,
-  yPos: 0
-}
 const BALL_RADIUS = visualViewport.width / 25
 const MILLISECONDS_PER_FRAME = 50
 const GRAVITY = -10
@@ -21,6 +9,25 @@ const WALLS = {
 }
 const PIXEL_SHIM = visualViewport.width / 10
 const POST_BOUNCE_SPEED_DIVISOR = 2
+let canvas
+let context
+let ball = {
+  xPos: visualViewport.width / 2,
+  yPos: visualViewport.height - 50,
+  xSpeed: 0,
+  ySpeed: 0,
+  color: "orange"
+}
+let hoop = {
+  xPos: visualViewport.width / 3,
+  yPos: PIXEL_SHIM,
+  src: "images/hoop3.png",
+  diameter: 100
+}
+let touchstart = {
+  xPos: 0,
+  yPos: 0
+}
 
 function initializeGame() {  
   canvas = document.getElementById("canvas")
@@ -34,6 +41,7 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
+  drawHoop()
   drawBall()
   moveBall()
   let intersectedWalls = getIntersectedWalls()
@@ -46,12 +54,14 @@ function gameLoop() {
 function drawBall() {
   context.beginPath()
   context.arc(ball.xPos, ball.yPos, BALL_RADIUS, 0, 2 * Math.PI)
-  context.fillStyle = "orange"
+  context.fillStyle = ball.color
   context.fill()
 }
 
 function drawHoop() {
-  
+  let element = document.createElement("IMG")
+  element.src = hoop.src
+  context.drawImage(element, hoop.xPos, hoop.yPos, hoop.diameter, hoop.diameter)
 }
 
 function handleTouchstart(e) {
@@ -74,9 +84,6 @@ function moveBall() {
 
 function getIntersectedWalls() {
   walls = []
-  if (ball.yPos < PIXEL_SHIM) {
-    walls.push(WALLS.TOP)
-  }
   if (ball.xPos > canvas.width - PIXEL_SHIM) {
     walls.push(WALLS.RIGHT)
   }
@@ -91,9 +98,6 @@ function getIntersectedWalls() {
 
 function bounceBall(wall) {
   switch (wall) {
-    case WALLS.TOP:
-      ball.ySpeed = Math.abs(ball.ySpeed) - (ball.ySpeed / POST_BOUNCE_SPEED_DIVISOR)
-      break
     case WALLS.RIGHT:
       ball.xSpeed = -Math.abs(ball.xSpeed) + (ball.xSpeed / POST_BOUNCE_SPEED_DIVISOR)
       break
