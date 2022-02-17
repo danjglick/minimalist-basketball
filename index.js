@@ -11,8 +11,16 @@ let touchstart = {
   yPos: 0
 }
 const BALL_RADIUS = visualViewport.width / 25
-const MILLISECONDS_PER_FRAME = 100
+const MILLISECONDS_PER_FRAME = 50
 const GRAVITY = -10
+const WALLS = {
+  TOP: "top",
+  RIGHT: "right",
+  BOTTOM: "bottom",
+  LEFT: "left"
+}
+const PIXEL_SHIM = visualViewport.width / 10
+const POST_BOUNCE_SPEED_DIVISOR = 2
 
 function initializeGame() {  
   canvas = document.getElementById("canvas")
@@ -28,6 +36,10 @@ function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   drawBall()
   moveBall()
+  let intersectedWalls = getIntersectedWalls()
+  for (i = 0; i < intersectedWalls.length; i++) {
+    bounceBall(intersectedWalls[i])
+  }
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
@@ -36,6 +48,10 @@ function drawBall() {
   context.arc(ball.xPos, ball.yPos, BALL_RADIUS, 0, 2 * Math.PI)
   context.fillStyle = "orange"
   context.fill()
+}
+
+function drawHoop() {
+  
 }
 
 function handleTouchstart(e) {
@@ -53,6 +69,46 @@ function moveBall() {
   ball.yPos += ball.ySpeed
   if (ball.ySpeed != 0) {
     ball.ySpeed -= GRAVITY
+  }
+}
+
+function getIntersectedWalls() {
+  walls = []
+  if (ball.yPos < PIXEL_SHIM) {
+    walls.push(WALLS.TOP)
+  }
+  if (ball.xPos > canvas.width - PIXEL_SHIM) {
+    walls.push(WALLS.RIGHT)
+  }
+  if (ball.yPos > canvas.height - PIXEL_SHIM) {
+    walls.push(WALLS.BOTTOM)
+  }
+  if (ball.xPos < PIXEL_SHIM) {
+    walls.push(WALLS.LEFT)
+  }
+  return walls  
+}
+
+function bounceBall(wall) {
+  switch (wall) {
+    case WALLS.TOP:
+      ball.ySpeed = Math.abs(ball.ySpeed) - (ball.ySpeed / POST_BOUNCE_SPEED_DIVISOR)
+      break
+    case WALLS.RIGHT:
+      ball.xSpeed = -Math.abs(ball.xSpeed) + (ball.xSpeed / POST_BOUNCE_SPEED_DIVISOR)
+      break
+    case WALLS.BOTTOM:
+      ball.ySpeed = -Math.abs(ball.ySpeed) + (ball.ySpeed / POST_BOUNCE_SPEED_DIVISOR)
+      break
+    case WALLS.LEFT:
+      ball.xSpeed = Math.abs(ball.xSpeed) - (ball.xSpeed / POST_BOUNCE_SPEED_DIVISOR)
+      break
+  }
+  if (ball.ySpeed < 0 && ball.ySpeed > -20 && ball.yPos > canvas.height - PIXEL_SHIM) {
+    ball.ySpeed = 0
+  }
+  if (Math.abs(ball.xSpeed) < 20) {
+    ball.xSpeed = 0
   }
 }
 
