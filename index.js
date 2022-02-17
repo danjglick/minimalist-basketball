@@ -20,7 +20,7 @@ let ball = {
 }
 let hoop = {
   xPos: visualViewport.width / 3,
-  yPos: PIXEL_SHIM,
+  yPos: visualViewport.height / 3,
   src: "images/hoop3.png",
   diameter: 100
 }
