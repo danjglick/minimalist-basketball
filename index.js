@@ -117,6 +117,9 @@ function bounceBall(wall) {
   if (Math.abs(ball.xSpeed) < 20) {
     ball.xSpeed = 0
   }
+  if (ball.ySpeed != 0) {
+    document.getElementById("bounce").play()
+  }
 }
 
 function isFieldgoal() {
@@ -129,6 +132,7 @@ function isFieldgoal() {
   ) {
     score += 1
     document.getElementById("score").innerHTML = String(score)
+    document.getElementById("swish").play()
   }  
 }
 

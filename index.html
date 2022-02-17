@@ -3,19 +3,17 @@
         <title>
           Minimalist Basketball
         </title>
-        <meta 
-          name="viewport" 
-          content="width=device-width, initial-scale=1.0"
-        >
-        <link 
-          rel="stylesheet" 
-          href="index.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="index.css">
         <script src="index.js"></script>
     </head>
     <body onload="initializeGame()">
         <div id="score">
           0
         </div>
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas">
+          <audio id="bounce" src="sounds/bounce.mp3"></audio>
+          <audio id="swish" src="sounds/swish.mp3"></audio>
+        </canvas>
     </body>
 </html>
