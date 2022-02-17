@@ -1,3 +1,7 @@
 body {
   background-color: DimGray;
 }
+
+#score {
+  color: white;
+}

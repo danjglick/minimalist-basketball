@@ -1,4 +1,4 @@
-const BALL_RADIUS = visualViewport.width / 25
+const BALL_RADIUS = visualViewport.width / 20
 const MILLISECONDS_PER_FRAME = 50
 const GRAVITY = -10
 const WALLS = {
@@ -21,13 +21,14 @@ let ball = {
 let hoop = {
   xPos: visualViewport.width / 3,
   yPos: visualViewport.height / 3,
-  src: "images/hoop3.png",
+  src: "images/hoop.png",
   diameter: 100
 }
 let touchstart = {
   xPos: 0,
   yPos: 0
 }
+let score = 0
 
 function initializeGame() {  
   canvas = document.getElementById("canvas")
@@ -35,7 +36,7 @@ function initializeGame() {
   canvas.height = visualViewport.height
   context = canvas.getContext('2d')
   document.addEventListener("touchstart", handleTouchstart)
-  document.addEventListener("touchmove", handleTouchmove)
+  document.addEventListener("touchmove", handleTouchmove, { passive: false })
   gameLoop()
 }
 
@@ -47,7 +48,8 @@ function gameLoop() {
   let intersectedWalls = getIntersectedWalls()
   for (i = 0; i < intersectedWalls.length; i++) {
     bounceBall(intersectedWalls[i])
-  }
+  } 
+  isFieldgoal()
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
@@ -70,6 +72,7 @@ function handleTouchstart(e) {
 }
 
 function handleTouchmove(e) {
+  e.preventDefault()
   ball.xSpeed = e.touches[0].clientX - touchstart.xPos
   ball.ySpeed = e.touches[0].clientY - touchstart.yPos
 }
@@ -114,6 +117,19 @@ function bounceBall(wall) {
   if (Math.abs(ball.xSpeed) < 20) {
     ball.xSpeed = 0
   }
+}
+
+function isFieldgoal() {
+  if (
+    ball.ySpeed > 0 &&
+    ball.xPos > hoop.xPos && 
+    ball.xPos < hoop.xPos + hoop.diameter &&
+    ball.yPos > hoop.yPos &&
+    ball.yPos < hoop.yPos + hoop.diameter
+  ) {
+    score += 1
+    document.getElementById("score").innerHTML = String(score)
+  }  
 }
 
 
