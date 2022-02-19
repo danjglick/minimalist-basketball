@@ -9,6 +9,7 @@ const WALLS = {
 const PIXEL_SHIM = visualViewport.width / 10
 const POST_BOUNCE_SPEED_DIVISOR = 2
 const PLATFORM_LENGTH = PIXEL_SHIM * 2
+const MINIMUM_SPEED = 20
 
 let canvas
 let context
@@ -215,10 +216,10 @@ function bounceBallDown() {
 }
 
 function executeBounceEffects() {
-  if (ball.yVelocity < 0 && ball.yVelocity > -20 && ball.yPos > canvas.height - PIXEL_SHIM) {
+  if (ball.yVelocity < 0 && ball.yVelocity > - MINIMUM_SPEED) {
     ball.yVelocity = 0
   }
-  if (Math.abs(ball.xVelocity) < 20) {
+  if (Math.abs(ball.xVelocity) < MINIMUM_SPEED) {
     ball.xVelocity = 0
   }
   if (ball.yVelocity != 0) {
