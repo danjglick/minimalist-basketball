@@ -8,14 +8,21 @@ const WALLS = {
 }
 const PIXEL_SHIM = visualViewport.width / 10
 const POST_BOUNCE_SPEED_DIVISOR = 2
+const PLATFORM_LENGTH = PIXEL_SHIM * 2
+
 let canvas
 let context
 let ball = {
   xPos: visualViewport.width / 2,
   yPos: visualViewport.height - 50,
-  xSpeed: 0,
-  ySpeed: 0,
+  xVelocity: 0,
+  yVelocity: 0,
   color: "orange"
+}
+let platforms = {
+  plain: [],
+  sticky: [],
+  wormhole: []
 }
 let hoop = {
   xPos: visualViewport.width / 3,
@@ -23,7 +30,6 @@ let hoop = {
   src: "images/hoop.png",
   diameter: 100
 }
-let platforms = []
 let touchstart = {
   xPos: 0,
   yPos: 0
@@ -41,30 +47,37 @@ function initializeGame() {
   gameLoop()
 }
 
-function initializePlatforms() {
-  for (i = 0; i < 6; i++) {
-    let platform = {
-      xPos: canvas.width * Math.random(),
-      yPos: canvas.height * Math.random()
-    }
-    platforms.push(platform)
-  }
-}
-
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   drawHoop()
   drawPlatforms()
   drawBall()
   moveBall()
-  let intersectedWalls = getIntersectedWalls()
-  for (i = 0; i < intersectedWalls.length; i++) {
-    bounceBall(intersectedWalls[i])
+  for (i = 0; i < Object.keys(WALLS).length; i++) {
+    let wall = WALLS[Object.keys(WALLS)[i]]
+    if (isBallInWall(wall)) {
+      handleBallInWall(wall)
+    }
   }
-  if (isFieldgoal()) {
-    handleFieldgoal()
+  for (i = 0; i < platforms.plain.length; i++) {
+    if (isBallInPlainPlatform(platforms.plain[i])) {
+      handleBallInPlainPlatform(platforms.plain[i])
+    }
+  }
+  if (isBallInHoop()) {
+    handleBallInHoop()
   }
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
+}
+
+function initializePlatforms() {
+  for (i = 0; i < 6; i++) {
+    let plainPlatform = {
+      xPos: canvas.width * Math.random(),
+      yPos: canvas.height * Math.random()
+    }
+    platforms.plain.push(plainPlatform)
+  }
 }
 
 function drawHoop() {
@@ -74,11 +87,11 @@ function drawHoop() {
 }
 
 function drawPlatforms() {
-  for (i = 0; i < platforms.length; i++) {
-    let platform = platforms[i]
+  for (i = 0; i < platforms.plain.length; i++) {
+    let platform = platforms.plain[i]
     context.beginPath()
     context.moveTo(platform.xPos, platform.yPos)
-    context.lineTo(platform.xPos + PIXEL_SHIM * 2, platform.yPos)
+    context.lineTo(platform.xPos + PLATFORM_LENGTH, platform.yPos)
     context.stroke()
   }
 }
@@ -97,58 +110,74 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  ball.xSpeed = e.touches[0].clientX - touchstart.xPos
-  ball.ySpeed = e.touches[0].clientY - touchstart.yPos
+  ball.xVelocity = e.touches[0].clientX - touchstart.xPos
+  ball.yVelocity = e.touches[0].clientY - touchstart.yPos
 }
 
 function moveBall() {
-  ball.xPos += ball.xSpeed
-  ball.yPos += ball.ySpeed
-  if (ball.ySpeed != 0) {
-    ball.ySpeed -= GRAVITY
+  ball.xPos += ball.xVelocity
+  ball.yPos += ball.yVelocity
+  if (ball.yVelocity != 0) {
+    ball.yVelocity -= GRAVITY
   }
 }
 
-function getIntersectedWalls() {
-  walls = []
-  if (ball.xPos > canvas.width - PIXEL_SHIM) {
-    walls.push(WALLS.right)
-  }
-  if (ball.yPos > canvas.height - PIXEL_SHIM) {
-    walls.push(WALLS.bottom)
-  }
-  if (ball.xPos < PIXEL_SHIM) {
-    walls.push(WALLS.left)
-  }
-  return walls
-}
-
-function bounceBall(wall) {
-  switch (wall) {
+function isBallInWall(wall) {
+  switch(wall) {
     case WALLS.right:
-      ball.xSpeed = -Math.abs(ball.xSpeed) + (ball.xSpeed / POST_BOUNCE_SPEED_DIVISOR)
+      if (ball.xPos > canvas.width - PIXEL_SHIM) {
+        return true
+      }
       break
     case WALLS.bottom:
-      ball.ySpeed = -Math.abs(ball.ySpeed) + (ball.ySpeed / POST_BOUNCE_SPEED_DIVISOR)
+      if (ball.yPos > canvas.height - PIXEL_SHIM) {
+        return true
+      }
       break
     case WALLS.left:
-      ball.xSpeed = Math.abs(ball.xSpeed) - (ball.xSpeed / POST_BOUNCE_SPEED_DIVISOR)
+      if (ball.xPos < PIXEL_SHIM) {
+        return true
+      }
       break
   }
-  if (ball.ySpeed < 0 && ball.ySpeed > -20 && ball.yPos > canvas.height - PIXEL_SHIM) {
-    ball.ySpeed = 0
-  }
-  if (Math.abs(ball.xSpeed) < 20) {
-    ball.xSpeed = 0
-  }
-  if (ball.ySpeed != 0) {
-    document.getElementById("bounce").play()
+  return false
+}
+
+function handleBallInWall(wall) {
+  switch (wall) {
+    case WALLS.right:
+      bounceBallLeft()
+      break
+    case WALLS.bottom:
+      bounceBallUp()
+      break
+    case WALLS.left:
+      bounceBallRight()
+      break
   }
 }
 
-function isFieldgoal() {
+function isBallInPlainPlatform(platform) {
   if (
-    ball.ySpeed > 0 &&
+    Math.abs(ball.yPos - platform.yPos) < PIXEL_SHIM &&
+    ball.xPos > platform.xPos && ball.xPos < platform.xPos + PLATFORM_LENGTH 
+  ) {
+    return true
+  }
+  return false
+}
+
+function handleBallInPlainPlatform() {
+  if (ball.yVelocity > 0) {
+    bounceBallUp()
+  } else {
+    bounceBallDown()
+  }
+}
+
+function isBallInHoop() {
+  if (
+    ball.yVelocity > 0 &&
     ball.xPos > hoop.xPos &&
     ball.xPos < hoop.xPos + hoop.diameter &&
     ball.yPos > hoop.yPos &&
@@ -159,8 +188,40 @@ function isFieldgoal() {
   return false
 }
 
-function handleFieldgoal() {
+function handleBallInHoop() {
   score += 1
   document.getElementById("score").innerHTML = String(score)
   document.getElementById("swish").play()
+}
+
+function bounceBallUp() {
+  ball.yVelocity = -Math.abs(ball.yVelocity) + (ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR)  
+  executeBounceEffects()
+}
+
+function bounceBallRight() {
+  ball.xVelocity = Math.abs(ball.xVelocity) - (ball.xVelocity / POST_BOUNCE_SPEED_DIVISOR)  
+  executeBounceEffects()
+}
+
+function bounceBallLeft() {
+  ball.xVelocity = -Math.abs(ball.xVelocity) + (ball.xVelocity / POST_BOUNCE_SPEED_DIVISOR)
+  executeBounceEffects()
+}
+
+function bounceBallDown() {
+  ball.yVelocity = Math.abs(ball.yVelocity) + (ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR)
+  executeBounceEffects()
+}
+
+function executeBounceEffects() {
+  if (ball.yVelocity < 0 && ball.yVelocity > -20 && ball.yPos > canvas.height - PIXEL_SHIM) {
+    ball.yVelocity = 0
+  }
+  if (Math.abs(ball.xVelocity) < 20) {
+    ball.xVelocity = 0
+  }
+  if (ball.yVelocity != 0) {
+    document.getElementById("bounce").play()
+  }
 }
