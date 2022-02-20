@@ -20,11 +20,7 @@ let ball = {
   yVelocity: 0,
   color: "orange"
 }
-let platforms = {
-  plain: [],
-  sticky: [],
-  wormhole: []
-}
+let platforms = []
 let hoop = {
   xPos: visualViewport.width / 3,
   yPos: visualViewport.height / 3,
@@ -60,9 +56,9 @@ function gameLoop() {
       handleBallInWall(wall)
     }
   }
-  for (i = 0; i < platforms.plain.length; i++) {
-    if (isBallInPlainPlatform(platforms.plain[i])) {
-      handleBallInPlainPlatform(platforms.plain[i])
+  for (i = 0; i < platforms.length; i++) {
+    if (isBallInPlatform(platforms[i])) {
+      handleBallInPlatform(platforms[i])
     }
   }
   if (isBallInHoop()) {
@@ -72,12 +68,12 @@ function gameLoop() {
 }
 
 function initializePlatforms() {
-  for (i = 0; i < 6; i++) {
-    let plainPlatform = {
+  for (i = 0; i < 5; i++) {
+    let platform = {
       xPos: canvas.width * Math.random(),
       yPos: canvas.height * Math.random()
     }
-    platforms.plain.push(plainPlatform)
+    platforms.push(platform)
   }
 }
 
@@ -88,8 +84,8 @@ function drawHoop() {
 }
 
 function drawPlatforms() {
-  for (i = 0; i < platforms.plain.length; i++) {
-    let platform = platforms.plain[i]
+  for (i = 0; i < platforms.length; i++) {
+    let platform = platforms[i]
     context.beginPath()
     context.moveTo(platform.xPos, platform.yPos)
     context.lineTo(platform.xPos + PLATFORM_LENGTH, platform.yPos)
@@ -158,17 +154,17 @@ function handleBallInWall(wall) {
   }
 }
 
-function isBallInPlainPlatform(platform) {
+function isBallInPlatform(platform) {
   if (
     Math.abs(ball.yPos - platform.yPos) < PIXEL_SHIM &&
-    ball.xPos > platform.xPos && ball.xPos < platform.xPos + PLATFORM_LENGTH 
+    ball.xPos > platform.xPos && ball.xPos < platform.xPos + PLATFORM_LENGTH
   ) {
     return true
   }
   return false
 }
 
-function handleBallInPlainPlatform() {
+function handleBallInPlatform() {
   if (ball.yVelocity > 0) {
     bounceBallUp()
   } else {
@@ -196,12 +192,12 @@ function handleBallInHoop() {
 }
 
 function bounceBallUp() {
-  ball.yVelocity = -Math.abs(ball.yVelocity) + (ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR)  
+  ball.yVelocity = -Math.abs(ball.yVelocity) + (ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR)
   executeBounceEffects()
 }
 
 function bounceBallRight() {
-  ball.xVelocity = Math.abs(ball.xVelocity) - (ball.xVelocity / POST_BOUNCE_SPEED_DIVISOR)  
+  ball.xVelocity = Math.abs(ball.xVelocity) - (ball.xVelocity / POST_BOUNCE_SPEED_DIVISOR)
   executeBounceEffects()
 }
 
