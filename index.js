@@ -21,6 +21,7 @@ let ball = {
   color: "orange"
 }
 let platforms = []
+let teammates = []
 let hoop = {
   xPos: visualViewport.width / 3,
   yPos: visualViewport.height / 3,
@@ -32,6 +33,7 @@ let touchstart = {
   yPos: 0
 }
 let score = 0
+let isThrowing = false
 
 function initializeGame() {
   canvas = document.getElementById("canvas")
@@ -44,19 +46,30 @@ function initializeGame() {
   gameLoop()
 }
 
+function initializePlatforms() {
+  for (let i = 0; i < 5; i++) {
+    let platform = {
+      xPos: canvas.width * Math.random(),
+      yPos: canvas.height * Math.random()
+    }
+    platforms.push(platform)
+  }
+}
+
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   drawHoop()
   drawPlatforms()
+  drawTeammates()
   drawBall()
   moveBall()
-  for (i = 0; i < Object.keys(WALLS).length; i++) {
+  for (let i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
     if (isBallInWall(wall)) {
       handleBallInWall(wall)
     }
   }
-  for (i = 0; i < platforms.length; i++) {
+  for (let i = 0; i < platforms.length; i++) {
     if (isBallInPlatform(platforms[i])) {
       handleBallInPlatform(platforms[i])
     }
@@ -67,13 +80,12 @@ function gameLoop() {
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
-function initializePlatforms() {
-  for (i = 0; i < 5; i++) {
-    let platform = {
-      xPos: canvas.width * Math.random(),
-      yPos: canvas.height * Math.random()
-    }
-    platforms.push(platform)
+function drawTeammates() {
+  for (let i = 0; i < teammates.length; i++) {    
+    context.beginPath()
+    context.arc(teammates[i].xPos, teammates[i].yPos, BALL_RADIUS, 0, 2 * Math.PI)
+    context.fillStyle = "lightBlue"
+    context.fill()
   }
 }
 
@@ -84,7 +96,7 @@ function drawHoop() {
 }
 
 function drawPlatforms() {
-  for (i = 0; i < platforms.length; i++) {
+  for (let i = 0; i < platforms.length; i++) {
     let platform = platforms[i]
     context.beginPath()
     context.moveTo(platform.xPos, platform.yPos)
@@ -103,12 +115,26 @@ function drawBall() {
 function handleTouchstart(e) {
   touchstart.xPos = e.touches[0].clientX
   touchstart.yPos = e.touches[0].clientY
+  if (touchstart.yPos > canvas.height - canvas.height / 5) {
+    isThrowing = true
+  }
+  else {
+    let teammate = {
+      xPos: touchstart.xPos,
+      yPos: touchstart.yPos
+    }
+    if (teammates.length < 4) {
+      teammates.push(teammate)
+    }
+  }
 }
 
 function handleTouchmove(e) {
   e.preventDefault()
-  ball.xVelocity = e.touches[0].clientX - touchstart.xPos
-  ball.yVelocity = e.touches[0].clientY - touchstart.yPos
+  if (isThrowing) {
+    ball.xVelocity = e.touches[0].clientX - touchstart.xPos
+    ball.yVelocity = e.touches[0].clientY - touchstart.yPos
+  }
 }
 
 function moveBall() {
