@@ -40,8 +40,64 @@ function initializeGame() {
   context = canvas.getContext('2d')
   document.addEventListener("touchstart", handleTouchstart)
   document.addEventListener("touchmove", handleTouchmove, { passive: false })
+  initializeHoop()
   initializePlatforms()
   gameLoop()
+}
+
+function initializeHoop() {
+  hoop.xPos = canvas.width * Math.random()
+  hoop.yPos = canvas.height * Math.random()
+}
+
+function initializePlatforms() {
+  for (i = 0; i < 5; i++) {
+    let spotA = {
+      xPos: canvas.width * Math.random(),
+      yPos: canvas.height * Math.random()
+    }
+    let spotB = {
+      xPos: canvas.width * Math.random(),
+      yPos: canvas.height * Math.random()
+    }
+    let ratioXVelocityToYVelocity = (spotB.xPos - spotA.xPos) / (spotB.yPos - spotA.yPos)
+    let xVelocityToSpotB = ratioXVelocityToYVelocity 
+    let yVelocityToSpotB = (spotB.yPos - spotA.yPos) / Math.abs(spotB.yPos - spotA.yPos)
+    let platform = {
+      xPos: spotA.xPos,
+      yPos: spotA.yPos,
+      xVelocity: xVelocityToSpotB,
+      yVelocity: yVelocityToSpotB,
+      xVelocityToSpotB: xVelocityToSpotB,
+      yVelocityToSpotB: yVelocityToSpotB,
+      xVelocityToSpotA: -xVelocityToSpotB,
+      yVelocityToSpotA: -yVelocityToSpotB,
+      spotA: spotA,
+      spotB: spotB
+    }
+    platforms.push(platform)
+  }
+}
+
+function movePlatforms() {
+  for (i = 0; i < platforms.length; i++) {
+    let platform = platforms[i]
+    platform.xPos = platform.xPos + platform.xVelocity,
+    platform.yPos = platform.yPos + platform.yVelocity
+    if (
+      Math.abs(platform.xPos - platform.spotB.xPos) < PIXEL_SHIM && 
+      Math.abs(platform.yPos - platform.spotB.yPos) < PIXEL_SHIM
+    ) {
+      platform.xVelocity = platform.xVelocityToSpotA
+      platform.yVelocity = platform.yVelocityToSpotA
+    } else if (
+      Math.abs(platform.xPos - platform.spotA.xPos) < PIXEL_SHIM && 
+      Math.abs(platform.yPos - platform.spotA.yPos) < PIXEL_SHIM
+    ) {
+      platform.xVelocity = platform.xVelocityToSpotB
+      platform.yVelocity = platform.yVelocityToSpotB
+    }
+  }
 }
 
 function gameLoop() {
@@ -50,6 +106,7 @@ function gameLoop() {
   drawPlatforms()
   drawBall()
   moveBall()
+  movePlatforms()
   for (i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
     if (isBallInWall(wall)) {
@@ -65,16 +122,6 @@ function gameLoop() {
     handleBallInHoop()
   }
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
-}
-
-function initializePlatforms() {
-  for (i = 0; i < 5; i++) {
-    let platform = {
-      xPos: canvas.width * Math.random(),
-      yPos: canvas.height * Math.random()
-    }
-    platforms.push(platform)
-  }
 }
 
 function drawHoop() {
