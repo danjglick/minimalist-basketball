@@ -43,17 +43,24 @@ function initializeGame() {
   document.addEventListener("touchstart", handleTouchstart)
   document.addEventListener("touchmove", handleTouchmove, { passive: false })
   initializePlatforms()
+  initializeHoop()
   gameLoop()
 }
 
 function initializePlatforms() {
   for (let i = 0; i < 5; i++) {
-    let platform = {
-      xPos: canvas.width * Math.random(),
-      yPos: canvas.height * Math.random()
-    }
-    platforms.push(platform)
+    platforms.push(
+      {
+        xPos: canvas.width * Math.random(),
+        yPos: (canvas.height - canvas.height / 5) * Math.random()
+      }
+    )
   }
+}
+
+function initializeHoop() {
+  hoop.xPos = canvas.width * Math.random()
+  hoop.yPos = (canvas.height - canvas.height / 2) * Math.random()
 }
 
 function gameLoop() {
