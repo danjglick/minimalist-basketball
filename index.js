@@ -74,6 +74,11 @@ function gameLoop() {
       handleBallInPlatform(platforms[i])
     }
   }
+  for (let i = 0; i < teammates.length; i++) {
+    if (isBallInTeammate(teammates[i])) {
+      handleBallInTeammate(teammates[i])
+    }
+  }
   if (isBallInHoop()) {
     handleBallInHoop()
   }
@@ -115,16 +120,18 @@ function drawBall() {
 function handleTouchstart(e) {
   touchstart.xPos = e.touches[0].clientX
   touchstart.yPos = e.touches[0].clientY
-  if (touchstart.yPos > canvas.height - canvas.height / 5) {
+  if (
+    touchstart.yPos > canvas.height - canvas.height / 5 ||
+    Math.abs(touchstart.yPos - ball.yPos) < PIXEL_SHIM && Math.abs(touchstart.xPos - ball.xPos) < PIXEL_SHIM
+  ) {
     isThrowing = true
   }
   else {
-    let teammate = {
-      xPos: touchstart.xPos,
-      yPos: touchstart.yPos
-    }
     if (teammates.length < 4) {
-      teammates.push(teammate)
+      teammates.push({
+        xPos: touchstart.xPos,
+        yPos: touchstart.yPos
+      })
     }
   }
 }
@@ -164,6 +171,22 @@ function isBallInWall(wall) {
       break
   }
   return false
+}
+
+function isBallInTeammate(teammate) {
+  if (
+    Math.abs(ball.xPos - teammate.xPos) < PIXEL_SHIM &&
+    Math.abs(ball.yPos - teammate.yPos) < PIXEL_SHIM
+  ) {
+    return true  
+  } else {
+    return false
+  }  
+}
+
+function handleBallInTeammate() {
+  ball.xVelocity = 0
+  ball.yVelocity = 0
 }
 
 function handleBallInWall(wall) {
