@@ -20,7 +20,7 @@ let ball = {
   yVelocity: 0,
   color: "orange"
 }
-let platforms = []
+let enemies = []
 let teammates = []
 let hoop = {
   xPos: visualViewport.width / 3,
@@ -42,20 +42,8 @@ function initializeGame() {
   context = canvas.getContext('2d')
   document.addEventListener("touchstart", handleTouchstart)
   document.addEventListener("touchmove", handleTouchmove, { passive: false })
-  initializePlatforms()
   initializeHoop()
   gameLoop()
-}
-
-function initializePlatforms() {
-  for (let i = 0; i < 5; i++) {
-    platforms.push(
-      {
-        xPos: canvas.width * Math.random(),
-        yPos: (canvas.height - canvas.height / 5) * Math.random()
-      }
-    )
-  }
 }
 
 function initializeHoop() {
@@ -66,7 +54,6 @@ function initializeHoop() {
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   drawHoop()
-  drawPlatforms()
   drawTeammates()
   drawBall()
   moveBall()
@@ -74,11 +61,6 @@ function gameLoop() {
     let wall = WALLS[Object.keys(WALLS)[i]]
     if (isBallInWall(wall)) {
       handleBallInWall(wall)
-    }
-  }
-  for (let i = 0; i < platforms.length; i++) {
-    if (isBallInPlatform(platforms[i])) {
-      handleBallInPlatform(platforms[i])
     }
   }
   for (let i = 0; i < teammates.length; i++) {
@@ -105,16 +87,6 @@ function drawHoop() {
   let element = document.createElement("IMG")
   element.src = hoop.src
   context.drawImage(element, hoop.xPos, hoop.yPos, hoop.diameter, hoop.diameter)
-}
-
-function drawPlatforms() {
-  for (let i = 0; i < platforms.length; i++) {
-    let platform = platforms[i]
-    context.beginPath()
-    context.moveTo(platform.xPos, platform.yPos)
-    context.lineTo(platform.xPos + PLATFORM_LENGTH, platform.yPos)
-    context.stroke()
-  }
 }
 
 function drawBall() {
@@ -207,24 +179,6 @@ function handleBallInWall(wall) {
     case WALLS.left:
       bounceBallRight()
       break
-  }
-}
-
-function isBallInPlatform(platform) {
-  if (
-    Math.abs(ball.yPos - platform.yPos) < PIXEL_SHIM &&
-    ball.xPos > platform.xPos && ball.xPos < platform.xPos + PLATFORM_LENGTH
-  ) {
-    return true
-  }
-  return false
-}
-
-function handleBallInPlatform() {
-  if (ball.yVelocity > 0) {
-    bounceBallUp()
-  } else {
-    bounceBallDown()
   }
 }
 
