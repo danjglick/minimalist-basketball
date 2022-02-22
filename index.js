@@ -10,6 +10,8 @@ const PIXEL_SHIM = visualViewport.width / 10
 const POST_BOUNCE_SPEED_DIVISOR = 2
 const PLATFORM_LENGTH = PIXEL_SHIM * 2
 const MINIMUM_SPEED = 20
+const BLUE_COLOR = "Cornflowerblue"
+const RED_COLOR = "IndianRed"
 
 let canvas
 let context
@@ -18,13 +20,44 @@ let ball = {
   yPos: visualViewport.height - 50,
   xVelocity: 0,
   yVelocity: 0,
-  color: "orange"
+  color: "Orange"
 }
-let enemies = []
+let enemies = [
+  {
+    xPos: visualViewport.width / 2,
+    yPos: visualViewport.height / 2.75,
+    xVelocity: 0,
+    yVelocity: 0
+  },
+  {
+    xPos: visualViewport.width / 6,
+    yPos: visualViewport.height / 10,
+    xVelocity: 0,
+    yVelocity: 0
+  },
+  {
+    xPos: visualViewport.width - (visualViewport.width / 4.5),
+    yPos: visualViewport.height / 10,
+    xVelocity: 0,
+    yVelocity: 0
+  },
+  {
+    xPos: visualViewport.width / 6,
+    yPos: visualViewport.height / 1.65,
+    xVelocity: 0,
+    yVelocity: 0
+  },
+  {
+    xPos: visualViewport.width - (visualViewport.width / 4.5),
+    yPos: visualViewport.height / 1.65,
+    xVelocity: 0,
+    yVelocity: 0
+  }
+]
 let teammates = []
 let hoop = {
   xPos: visualViewport.width / 3,
-  yPos: visualViewport.height / 3,
+  yPos: visualViewport.height / 100,
   src: "images/hoop.png",
   diameter: 100
 }
@@ -42,30 +75,27 @@ function initializeGame() {
   context = canvas.getContext('2d')
   document.addEventListener("touchstart", handleTouchstart)
   document.addEventListener("touchmove", handleTouchmove, { passive: false })
-  initializeHoop()
   gameLoop()
-}
-
-function initializeHoop() {
-  hoop.xPos = canvas.width * Math.random()
-  hoop.yPos = (canvas.height - canvas.height / 2) * Math.random()
 }
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
-  drawHoop()
+  drawEnemies()
   drawTeammates()
+  drawHoop()
   drawBall()
   moveBall()
+  moveEnemies()
   for (let i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
     if (isBallInWall(wall)) {
       handleBallInWall(wall)
     }
   }
-  for (let i = 0; i < teammates.length; i++) {
-    if (isBallInTeammate(teammates[i])) {
-      handleBallInTeammate(teammates[i])
+  let players = teammates.concat(enemies)
+  for (let i = 0; i < players.length; i++) {
+    if (isBallInPlayer(players[i])) {
+      handleBallInPlayer(players[i])
     }
   }
   if (isBallInHoop()) {
@@ -74,11 +104,42 @@ function gameLoop() {
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
+function moveEnemies() {
+  if (ball.yPos < canvas.height - (canvas.height / 5)) {
+    let closestToBallData = {
+      enemyId: -1,
+      distanceToBall: canvas.height + canvas.width
+    }
+    for (let i = 0; i < enemies.length; i++) {
+      let enemy = enemies[i]
+      let distanceToBall = Math.abs(ball.xPos - enemy.xPos) + Math.abs(ball.yPos - enemy.yPos)
+      if (closestToBallData.enemyId == -1 || distanceToBall < closestToBallData.distanceToBall) {
+        closestToBallData.enemyId = i
+        closestToBallData.distanceToBall = distanceToBall
+      }
+    }
+    let closestToBall = enemies[closestToBallData.enemyId]
+    closestToBall.xVelocity = (ball.xPos - closestToBall.xPos) / 50
+    closestToBall.yVelocity = (ball.yPos - closestToBall.yPos) / 50
+    closestToBall.xPos += closestToBall.xVelocity
+    closestToBall.yPos += closestToBall.yVelocity
+  }
+}
+
+function drawEnemies() {
+  for (let i = 0; i < enemies.length; i++) {
+    context.beginPath()
+    context.arc(enemies[i].xPos, enemies[i].yPos, BALL_RADIUS, 0, 2 * Math.PI)
+    context.fillStyle = RED_COLOR
+    context.fill()
+  }
+}
+
 function drawTeammates() {
   for (let i = 0; i < teammates.length; i++) {    
     context.beginPath()
     context.arc(teammates[i].xPos, teammates[i].yPos, BALL_RADIUS, 0, 2 * Math.PI)
-    context.fillStyle = "lightBlue"
+    context.fillStyle = BLUE_COLOR
     context.fill()
   }
 }
@@ -152,10 +213,10 @@ function isBallInWall(wall) {
   return false
 }
 
-function isBallInTeammate(teammate) {
+function isBallInPlayer(player) {
   if (
-    Math.abs(ball.xPos - teammate.xPos) < PIXEL_SHIM &&
-    Math.abs(ball.yPos - teammate.yPos) < PIXEL_SHIM
+    Math.abs(ball.xPos - player.xPos) < PIXEL_SHIM &&
+    Math.abs(ball.yPos - player.yPos) < PIXEL_SHIM
   ) {
     return true  
   } else {
@@ -163,7 +224,7 @@ function isBallInTeammate(teammate) {
   }  
 }
 
-function handleBallInTeammate() {
+function handleBallInPlayer() {
   ball.xVelocity = 0
   ball.yVelocity = 0
 }
@@ -222,7 +283,7 @@ function bounceBallDown() {
 }
 
 function executeBounceEffects() {
-  if (ball.yVelocity < 0 && ball.yVelocity > - MINIMUM_SPEED) {
+  if (ball.yVelocity < 0 && ball.yVelocity > -MINIMUM_SPEED) {
     ball.yVelocity = 0
   }
   if (Math.abs(ball.xVelocity) < MINIMUM_SPEED) {
