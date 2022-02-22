@@ -81,10 +81,6 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
-  drawEnemies()
-  drawTeammates()
-  drawHoop()
-  drawBall()
   moveBall()
   moveEnemies()
   for (let i = 0; i < Object.keys(WALLS).length; i++) {
@@ -102,7 +98,19 @@ function gameLoop() {
   if (isBallInHoop()) {
     handleBallInHoop()
   }
+  drawEnemies()
+  drawTeammates()
+  drawHoop()
+  drawBall()
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
+}
+
+function moveBall() {
+  ball.xPos += ball.xVelocity
+  ball.yPos += ball.yVelocity
+  if (ball.yVelocity != 0) {
+    ball.yVelocity -= GRAVITY
+  }
 }
 
 function moveEnemies() {
@@ -114,7 +122,10 @@ function moveEnemies() {
     for (let i = 0; i < enemies.length; i++) {
       let enemy = enemies[i]
       let distanceToBall = Math.abs(ball.xPos - enemy.xPos) + Math.abs(ball.yPos - enemy.yPos)
-      if (closestToBallData.enemyId == -1 || distanceToBall < closestToBallData.distanceToBall) {
+      if (
+        closestToBallData.enemyId == -1 
+        || distanceToBall < closestToBallData.distanceToBall
+      ) {
         closestToBallData.enemyId = i
         closestToBallData.distanceToBall = distanceToBall
       }
@@ -125,6 +136,76 @@ function moveEnemies() {
     closestToBall.xPos += closestToBall.xVelocity
     closestToBall.yPos += closestToBall.yVelocity
   }
+}
+
+function isBallInWall(wall) {
+  switch(wall) {
+    case WALLS.right:
+      if (ball.xPos > canvas.width - PIXEL_SHIM) {
+        return true
+      }
+      break
+    case WALLS.bottom:
+      if (ball.yPos > canvas.height - PIXEL_SHIM) {
+        return true
+      }
+      break
+    case WALLS.left:
+      if (ball.xPos < PIXEL_SHIM) {
+        return true
+      }
+      break
+  }
+  return false
+}
+
+function isBallInPlayer(player) {
+  if (
+    Math.abs(ball.xPos - player.xPos) < PIXEL_SHIM
+    && Math.abs(ball.yPos - player.yPos) < PIXEL_SHIM
+  ) {
+    return true  
+  } else {
+    return false
+  }  
+}
+
+function handleBallInPlayer() {
+  ball.xVelocity = 0
+  ball.yVelocity = 0
+}
+
+function handleBallInWall(wall) {
+  switch (wall) {
+    case WALLS.right:
+      bounceBallLeft()
+      break
+    case WALLS.bottom:
+      bounceBallUp()
+      break
+    case WALLS.left:
+      bounceBallRight()
+      break
+  }
+}
+
+function isBallInHoop() {
+  if (
+    ball.yVelocity > 0
+    && ball.xPos > hoop.xPos
+    && ball.xPos < hoop.xPos + hoop.diameter
+    && ball.yPos > hoop.yPos
+    && ball.yPos < hoop.yPos + hoop.diameter
+  ) {
+    return true
+  }
+  return false
+}
+
+function handleBallInHoop() {
+  score += 1
+  document.getElementById("score").innerHTML = String(score)
+  document.getElementById("swish").play()
 }
 
 function drawEnemies() {
@@ -162,18 +243,18 @@ function handleTouchstart(e) {
   touchstart.xPos = e.touches[0].clientX
   touchstart.yPos = e.touches[0].clientY
   if (
-    touchstart.yPos > canvas.height - canvas.height / 5 ||
-    Math.abs(touchstart.yPos - ball.yPos) < PIXEL_SHIM && Math.abs(touchstart.xPos - ball.xPos) < PIXEL_SHIM
+    touchstart.yPos > canvas.height - canvas.height / 5
+    || (
+      Math.abs(touchstart.yPos - ball.yPos) < PIXEL_SHIM 
+      && Math.abs(touchstart.xPos - ball.xPos) < PIXEL_SHIM
+    )
   ) {
     isThrowing = true
-  }
-  else {
-    if (teammates.length < 4) {
+  } else if (teammates.length < 4) {
       teammates.push({
         xPos: touchstart.xPos,
         yPos: touchstart.yPos
       })
-    }
   }
 }
 
@@ -183,84 +264,6 @@ function handleTouchmove(e) {
     ball.xVelocity = e.touches[0].clientX - touchstart.xPos
     ball.yVelocity = e.touches[0].clientY - touchstart.yPos
   }
-}
-
-function moveBall() {
-  ball.xPos += ball.xVelocity
-  ball.yPos += ball.yVelocity
-  if (ball.yVelocity != 0) {
-    ball.yVelocity -= GRAVITY
-  }
-}
-
-function isBallInWall(wall) {
-  switch(wall) {
-    case WALLS.right:
-      if (ball.xPos > canvas.width - PIXEL_SHIM) {
-        return true
-      }
-      break
-    case WALLS.bottom:
-      if (ball.yPos > canvas.height - PIXEL_SHIM) {
-        return true
-      }
-      break
-    case WALLS.left:
-      if (ball.xPos < PIXEL_SHIM) {
-        return true
-      }
-      break
-  }
-  return false
-}
-
-function isBallInPlayer(player) {
-  if (
-    Math.abs(ball.xPos - player.xPos) < PIXEL_SHIM &&
-    Math.abs(ball.yPos - player.yPos) < PIXEL_SHIM
-  ) {
-    return true  
-  } else {
-    return false
-  }  
-}
-
-function handleBallInPlayer() {
-  ball.xVelocity = 0
-  ball.yVelocity = 0
-}
-
-function handleBallInWall(wall) {
-  switch (wall) {
-    case WALLS.right:
-      bounceBallLeft()
-      break
-    case WALLS.bottom:
-      bounceBallUp()
-      break
-    case WALLS.left:
-      bounceBallRight()
-      break
-  }
-}
-
-function isBallInHoop() {
-  if (
-    ball.yVelocity > 0 &&
-    ball.xPos > hoop.xPos &&
-    ball.xPos < hoop.xPos + hoop.diameter &&
-    ball.yPos > hoop.yPos &&
-    ball.yPos < hoop.yPos + hoop.diameter
-  ) {
-    return true
-  }
-  return false
-}
-
-function handleBallInHoop() {
-  score += 1
-  document.getElementById("score").innerHTML = String(score)
-  document.getElementById("swish").play()
 }
 
 function bounceBallUp() {
@@ -284,7 +287,10 @@ function bounceBallDown() {
 }
 
 function executeBounceEffects() {
-  if (ball.yVelocity < 0 && ball.yVelocity > -MINIMUM_SPEED) {
+  if (
+    ball.yVelocity < 0 
+    && ball.yVelocity > -MINIMUM_SPEED
+  ) {
     ball.yVelocity = 0
   }
   if (Math.abs(ball.xVelocity) < MINIMUM_SPEED) {
