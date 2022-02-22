@@ -8,6 +8,7 @@ const WALLS = {
 }
 const PIXEL_SHIM = visualViewport.width / 10
 const POST_BOUNCE_SPEED_DIVISOR = 2
+const ENEMY_SPEED_DIVISOR = 50
 const PLATFORM_LENGTH = PIXEL_SHIM * 2
 const MINIMUM_SPEED = 20
 const BLUE_COLOR = "Cornflowerblue"
@@ -119,8 +120,8 @@ function moveEnemies() {
       }
     }
     let closestToBall = enemies[closestToBallData.enemyId]
-    closestToBall.xVelocity = (ball.xPos - closestToBall.xPos) / 50
-    closestToBall.yVelocity = (ball.yPos - closestToBall.yPos) / 50
+    closestToBall.xVelocity = (ball.xPos - closestToBall.xPos) / ENEMY_SPEED_DIVISOR
+    closestToBall.yVelocity = (ball.yPos - closestToBall.yPos) / ENEMY_SPEED_DIVISOR
     closestToBall.xPos += closestToBall.xVelocity
     closestToBall.yPos += closestToBall.yVelocity
   }
