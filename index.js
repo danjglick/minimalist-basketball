@@ -250,11 +250,14 @@ function handleTouchstart(e) {
     )
   ) {
     isThrowing = true
-  } else if (teammates.length < 4) {
-      teammates.push({
-        xPos: touchstart.xPos,
-        yPos: touchstart.yPos
-      })
+  } else {
+    teammates.push({
+      xPos: touchstart.xPos,
+      yPos: touchstart.yPos
+    })
+    if (teammates.length == 5) {
+      teammates.shift()        
+    }
   }
 }
 
