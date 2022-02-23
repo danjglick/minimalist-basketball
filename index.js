@@ -7,8 +7,9 @@ const WALLS = {
   left: "left"
 }
 const PIXEL_SHIM = visualViewport.width / 10
-const POST_BOUNCE_SPEED_DIVISOR = 2
+const POST_BOUNCE_SPEED_DIVISOR = 2.5
 const ENEMY_SPEED_DIVISOR = 50
+const BALL_SPEED_DIVISOR = 2
 const PLATFORM_LENGTH = PIXEL_SHIM * 2
 const MINIMUM_SPEED = 20
 const BLUE_COLOR = "Cornflowerblue"
@@ -27,18 +28,6 @@ let enemies = [
   {
     xPos: visualViewport.width / 2,
     yPos: visualViewport.height / 2.75,
-    xVelocity: 0,
-    yVelocity: 0
-  },
-  {
-    xPos: visualViewport.width / 6,
-    yPos: visualViewport.height / 10,
-    xVelocity: 0,
-    yVelocity: 0
-  },
-  {
-    xPos: visualViewport.width - (visualViewport.width / 4.5),
-    yPos: visualViewport.height / 10,
     xVelocity: 0,
     yVelocity: 0
   },
@@ -68,6 +57,7 @@ let touchstart = {
 }
 let score = 0
 let isThrowing = false
+let offensiveTeam = teammates
 
 function initializeGame() {
   canvas = document.getElementById("canvas")
@@ -81,8 +71,12 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
-  moveBall()
+  decideEnemyPaths()
+  if (offensiveTeam == enemies) {
+    decideBallPath()
+  }
   moveEnemies()
+  moveBall()
   for (let i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
     if (isBallInWall(wall)) {
@@ -105,15 +99,37 @@ function gameLoop() {
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
-function moveBall() {
-  ball.xPos += ball.xVelocity
-  ball.yPos += ball.yVelocity
-  if (ball.yVelocity != 0) {
-    ball.yVelocity -= GRAVITY
+function handleTouchstart(e) {
+  touchstart.xPos = e.touches[0].clientX
+  touchstart.yPos = e.touches[0].clientY
+  if (
+    touchstart.yPos > canvas.height - canvas.height / 5
+    || (
+      Math.abs(touchstart.yPos - ball.yPos) < PIXEL_SHIM 
+      && Math.abs(touchstart.xPos - ball.xPos) < PIXEL_SHIM
+    )
+  ) {
+    isThrowing = true
+  } else {
+    teammates.push({
+      xPos: touchstart.xPos,
+      yPos: touchstart.yPos
+    })
+    if (teammates.length == 3) {
+      teammates.shift()        
+    }
   }
 }
 
-function moveEnemies() {
+function handleTouchmove(e) {
+  e.preventDefault()
+  if (isThrowing) {
+    ball.xVelocity = (e.touches[0].clientX - touchstart.xPos) / BALL_SPEED_DIVISOR
+    ball.yVelocity = (e.touches[0].clientY - touchstart.yPos) / BALL_SPEED_DIVISOR
+  }
+}
+
+function decideEnemyPaths() {
   if (ball.yPos < canvas.height - (canvas.height / 5)) {
     let closestToBallData = {
       enemyId: -1,
@@ -121,7 +137,7 @@ function moveEnemies() {
     }
     for (let i = 0; i < enemies.length; i++) {
       let enemy = enemies[i]
-      let distanceToBall = Math.abs(ball.xPos - enemy.xPos) + Math.abs(ball.yPos - enemy.yPos)
+      let distanceToBall = (Math.abs(ball.xPos - enemy.xPos) ** 2 + Math.abs(ball.yPos - enemy.yPos) ** 2) ** 0.5
       if (
         closestToBallData.enemyId == -1 
         || distanceToBall < closestToBallData.distanceToBall
@@ -135,6 +151,19 @@ function moveEnemies() {
     closestToBall.yVelocity = (ball.yPos - closestToBall.yPos) / ENEMY_SPEED_DIVISOR
     closestToBall.xPos += closestToBall.xVelocity
     closestToBall.yPos += closestToBall.yVelocity
+  }
+}
+
+function decideBallPath() {}
+
+function moveEnemies() {
+}
+
+function moveBall() {
+  ball.xPos += ball.xVelocity
+  ball.yPos += ball.yVelocity
+  if (ball.yVelocity != 0) {
+    ball.yVelocity -= GRAVITY
   }
 }
 
@@ -237,36 +266,6 @@ function drawBall() {
   context.arc(ball.xPos, ball.yPos, BALL_RADIUS, 0, 2 * Math.PI)
   context.fillStyle = ball.color
   context.fill()
-}
-
-function handleTouchstart(e) {
-  touchstart.xPos = e.touches[0].clientX
-  touchstart.yPos = e.touches[0].clientY
-  if (
-    touchstart.yPos > canvas.height - canvas.height / 5
-    || (
-      Math.abs(touchstart.yPos - ball.yPos) < PIXEL_SHIM 
-      && Math.abs(touchstart.xPos - ball.xPos) < PIXEL_SHIM
-    )
-  ) {
-    isThrowing = true
-  } else {
-    teammates.push({
-      xPos: touchstart.xPos,
-      yPos: touchstart.yPos
-    })
-    if (teammates.length == 5) {
-      teammates.shift()        
-    }
-  }
-}
-
-function handleTouchmove(e) {
-  e.preventDefault()
-  if (isThrowing) {
-    ball.xVelocity = e.touches[0].clientX - touchstart.xPos
-    ball.yVelocity = e.touches[0].clientY - touchstart.yPos
-  }
 }
 
 function bounceBallUp() {
