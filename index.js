@@ -7,7 +7,7 @@ const WALLS = {
   left: "left"
 }
 const PIXEL_SHIM = visualViewport.width / 10
-const POST_BOUNCE_SPEED_DIVISOR = 3
+const POST_BOUNCE_SPEED_DIVISOR = 2
 const ENEMY_SPEED_DIVISOR = 50
 const BALL_SPEED_DIVISOR = 2
 const MINIMUM_SPEED = 20
