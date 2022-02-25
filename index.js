@@ -185,22 +185,29 @@ function isBallInPlayer(player) {
   ) {
     
     // https://physics.stackexchange.com/questions/56265/how-to-get-the-angle-needed-for-a-projectile-to-pass-through-a-given-point-for-t
-    const ENEMY_BALL_SPEED = 100
-    let xChange = player.xPos - hoop.xPos
-    let yChange = player.yPos - hoop.yPos
-    let angleRadians = Math.atan(
-      (ENEMY_BALL_SPEED ** 2 / (GRAVITY * xChange)) - 
-      (
+    if (enemies.includes(player)) {
+      const ENEMY_BALL_SPEED = 100
+      let xChange = player.xPos - hoop.xPos
+      let yChange = player.yPos - hoop.yPos
+      let angleRadians = Math.atan(
+        (ENEMY_BALL_SPEED ** 2 / (GRAVITY * xChange)) - 
         (
-          (ENEMY_BALL_SPEED ** 2 * (ENEMY_BALL_SPEED ** 2 - 2 * GRAVITY * yChange)) / 
-          (GRAVITY ** 2 * xChange ** 2) 
+          (
+            (ENEMY_BALL_SPEED ** 2 * (ENEMY_BALL_SPEED ** 2 - 2 * GRAVITY * yChange)) / 
+            (GRAVITY ** 2 * xChange ** 2) 
+          ) 
+          - 1
         ) 
-        - 1
-      ) 
-      ** 0.5
-    )
-    ball.xVelocity = ball.xPos <= canvas.width / 2 ? Math.cos(angleRadians) * 100 : -Math.cos(angleRadians) * 100
-    ball.yVelocity = Math.sin(angleRadians) * 100
+        ** 0.5
+      )
+      ball.xVelocity = (ball.xPos <= canvas.width / 2) ? (Math.cos(angleRadians) * 100) : (-Math.cos(angleRadians) * 100)
+      ball.yVelocity = Math.sin(angleRadians) * 100
+      
+    } else {
+      ball.xVelocity = 0
+      ball.yVelocity = 0
+    }
+    
     return true  
   } else {
     return false
