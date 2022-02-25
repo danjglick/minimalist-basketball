@@ -11,6 +11,7 @@ const POST_BOUNCE_SPEED_DIVISOR = 3
 const ENEMY_SPEED_DIVISOR = 50
 const BALL_SPEED_DIVISOR = 2
 const MINIMUM_SPEED = 20
+const ENEMY_BALL_SPEED = 100
 const BLUE_COLOR = "Cornflowerblue"
 const RED_COLOR = "IndianRed"
 
@@ -24,24 +25,24 @@ let ball = {
   color: "Orange"
 }
 let enemies = [
-  {
-    xPos: visualViewport.width / 2,
-    yPos: visualViewport.height / 2.75,
-    xVelocity: 0,
-    yVelocity: 0
-  },
-  {
-    xPos: visualViewport.width / 6,
-    yPos: visualViewport.height / 1.65,
-    xVelocity: 0,
-    yVelocity: 0
-  },
-  {
-    xPos: visualViewport.width - (visualViewport.width / 4.5),
-    yPos: visualViewport.height / 1.65,
-    xVelocity: 0,
-    yVelocity: 0
-  }
+  // {
+  //   xPos: visualViewport.width / 2,
+  //   yPos: visualViewport.height / 2.75,
+  //   xVelocity: 0,
+  //   yVelocity: 0
+  // },
+  // {
+  //   xPos: visualViewport.width / 6,
+  //   yPos: visualViewport.height / 1.65,
+  //   xVelocity: 0,
+  //   yVelocity: 0
+  // },
+  // {
+  //   xPos: visualViewport.width - (visualViewport.width / 4.5),
+  //   yPos: visualViewport.height / 1.65,
+  //   xVelocity: 0,
+  //   yVelocity: 0
+  // }
 ]
 let teammates = []
 let hoop = {
@@ -70,7 +71,7 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
-  decideEnemyPaths()
+  // decideEnemyPaths()
   moveBall()
   for (let i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
@@ -185,8 +186,7 @@ function isBallInPlayer(player) {
   ) {
     
     // https://physics.stackexchange.com/questions/56265/how-to-get-the-angle-needed-for-a-projectile-to-pass-through-a-given-point-for-t
-    if (enemies.includes(player)) {
-      const ENEMY_BALL_SPEED = 100
+    // if (enemies.includes(player)) {
       let xChange = player.xPos - hoop.xPos
       let yChange = player.yPos - hoop.yPos
       let angleRadians = Math.atan(
@@ -203,10 +203,10 @@ function isBallInPlayer(player) {
       ball.xVelocity = (ball.xPos <= canvas.width / 2) ? (Math.cos(angleRadians) * 100) : (-Math.cos(angleRadians) * 100)
       ball.yVelocity = Math.sin(angleRadians) * 100
       
-    } else {
-      ball.xVelocity = 0
-      ball.yVelocity = 0
-    }
+    // } else {
+    //   ball.xVelocity = 0
+    //   ball.yVelocity = 0
+    // }
     
     return true  
   } else {
