@@ -7,7 +7,7 @@ const WALLS = {
   left: "left"
 }
 const PIXEL_SHIM = visualViewport.width / 10
-const POST_BOUNCE_SPEED_DIVISOR = 10
+const POST_BOUNCE_SPEED_DIVISOR = 3
 const ENEMY_SPEED_DIVISOR = 50
 const BALL_SPEED_DIVISOR = 2
 const MINIMUM_SPEED = 20
@@ -180,8 +180,8 @@ function isBallInWall(wall) {
 
 function isBallInPlayer(player) {
   if (
-    Math.abs(ball.xPos - player.xPos) < PIXEL_SHIM
-    && Math.abs(ball.yPos - player.yPos) < PIXEL_SHIM
+    Math.abs(ball.xPos - player.xPos) < PIXEL_SHIM &&
+    Math.abs(ball.yPos - player.yPos) < PIXEL_SHIM
   ) {
     
     // https://physics.stackexchange.com/questions/56265/how-to-get-the-angle-needed-for-a-projectile-to-pass-through-a-given-point-for-t
