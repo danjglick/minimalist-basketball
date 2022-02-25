@@ -7,10 +7,9 @@ const WALLS = {
   left: "left"
 }
 const PIXEL_SHIM = visualViewport.width / 10
-const POST_BOUNCE_SPEED_DIVISOR = 2.5
+const POST_BOUNCE_SPEED_DIVISOR = 10
 const ENEMY_SPEED_DIVISOR = 50
 const BALL_SPEED_DIVISOR = 2
-const PLATFORM_LENGTH = PIXEL_SHIM * 2
 const MINIMUM_SPEED = 20
 const BLUE_COLOR = "Cornflowerblue"
 const RED_COLOR = "IndianRed"
@@ -47,7 +46,7 @@ let enemies = [
 let teammates = []
 let hoop = {
   xPos: visualViewport.width / 3,
-  yPos: visualViewport.height / 100,
+  yPos: PIXEL_SHIM,
   src: "images/hoop.png",
   diameter: 100
 }
@@ -72,10 +71,6 @@ function initializeGame() {
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   decideEnemyPaths()
-  if (offensiveTeam == enemies) {
-    decideBallPath()
-  }
-  moveEnemies()
   moveBall()
   for (let i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
@@ -92,9 +87,9 @@ function gameLoop() {
   if (isBallInHoop()) {
     handleBallInHoop()
   }
+  drawHoop()
   drawEnemies()
   drawTeammates()
-  drawHoop()
   drawBall()
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
@@ -116,7 +111,7 @@ function handleTouchstart(e) {
       yPos: touchstart.yPos
     })
     if (teammates.length == 3) {
-      teammates.shift()        
+      teammates.shift()     
     }
   }
 }
@@ -154,11 +149,6 @@ function decideEnemyPaths() {
   }
 }
 
-function decideBallPath() {}
-
-function moveEnemies() {
-}
-
 function moveBall() {
   ball.xPos += ball.xVelocity
   ball.yPos += ball.yVelocity
@@ -193,6 +183,24 @@ function isBallInPlayer(player) {
     Math.abs(ball.xPos - player.xPos) < PIXEL_SHIM
     && Math.abs(ball.yPos - player.yPos) < PIXEL_SHIM
   ) {
+    
+    // https://physics.stackexchange.com/questions/56265/how-to-get-the-angle-needed-for-a-projectile-to-pass-through-a-given-point-for-t
+    const ENEMY_BALL_SPEED = 100
+    let xChange = player.xPos - hoop.xPos
+    let yChange = player.yPos - hoop.yPos
+    let angleRadians = Math.atan(
+      (ENEMY_BALL_SPEED ** 2 / (GRAVITY * xChange)) - 
+      (
+        (
+          (ENEMY_BALL_SPEED ** 2 * (ENEMY_BALL_SPEED ** 2 - 2 * GRAVITY * yChange)) / 
+          (GRAVITY ** 2 * xChange ** 2) 
+        ) 
+        - 1
+      ) 
+      ** 0.5
+    )
+    ball.xVelocity = ball.xPos <= canvas.width / 2 ? Math.cos(angleRadians) * 100 : -Math.cos(angleRadians) * 100
+    ball.yVelocity = Math.sin(angleRadians) * 100
     return true  
   } else {
     return false
@@ -200,8 +208,8 @@ function isBallInPlayer(player) {
 }
 
 function handleBallInPlayer() {
-  ball.xVelocity = 0
-  ball.yVelocity = 0
+  // ball.xVelocity = 0
+  // ball.yVelocity = 0
 }
 
 function handleBallInWall(wall) {
