@@ -123,28 +123,16 @@ function handleTouchmove(e) {
 
 function decideEnemyPaths() {
   if (ball.yPos < canvas.height - (canvas.height / 5)) {
-    let closestToBall = getClosestEnemyToBall()
-    closestToBall.xVelocity = (ball.xPos - closestToBall.xPos) / ENEMY_SPEED_DIVISOR
-    closestToBall.yVelocity = (ball.yPos - closestToBall.yPos) / ENEMY_SPEED_DIVISOR
+    let closestEnemyToBall = getClosestEnemyToSpot(ball)
+    closestEnemyToBall.xVelocity = (ball.xPos - closestEnemyToBall.xPos) / ENEMY_SPEED_DIVISOR
+    closestEnemyToBall.yVelocity = (ball.yPos - closestEnemyToBall.yPos) / ENEMY_SPEED_DIVISOR
   }
-}
-function getClosestEnemyToBall() {
-  let closestToBallData = { 
-    enemyId: -1, 
-    distanceToBall: canvas.height + canvas.width 
+  let openTeammate = getOpenTeammate()
+  if (openTeammate) {
+    let closestEnemyToOpenTeammate = getClosestEnemyToSpot(getOpenTeammate())
+    closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
+    closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR
   }
-  for (let i = 0; i < enemies.length; i++) {
-    let enemy = enemies[i]
-    let distanceToBall = getDistance(ball, enemy)
-    if (
-      closestToBallData.enemyId == -1 || 
-      distanceToBall < closestToBallData.distanceToBall
-    ) {
-      closestToBallData.enemyId = i
-      closestToBallData.distanceToBall = distanceToBall
-    }
-  }
-  return enemies[closestToBallData.enemyId]
 }
 
 function isBallInWall(wall) {
@@ -288,6 +276,40 @@ function addTeammate(touchstart) {
   if (teammates.length == 3) {
     teammates.shift()     
   }  
+}
+
+function getClosestEnemyToSpot(spot) {
+  let closestToSpotMetadata = { 
+    enemyId: -1, 
+    distanceToSpot: canvas.height + canvas.width 
+  }
+  for (let i = 0; i < enemies.length; i++) {
+    let enemy = enemies[i]
+    let distanceToSpot = getDistance(spot, enemy)
+    if (
+      closestToSpotMetadata.enemyId == -1 || 
+      distanceToSpot < closestToSpotMetadata.distanceToSpot
+    ) {
+      closestToSpotMetadata.enemyId = i
+      closestToSpotMetadata.distanceToSpot = distanceToSpot
+    }
+  }
+  return enemies[closestToSpotMetadata.enemyId]
+}
+
+function getOpenTeammate() {
+  for (let i = 0; i < teammates.length; i++) {
+    let isOpen = true
+    for (let j = 0; j < teammates.length; j++) {
+      if (isClose(teammates[i], enemies[j])) {
+        isOpen = false
+      }
+    }
+    if (isOpen) {
+      return teammates[i]
+    }
+  }
+  return null
 }
 
 function isClose(objectA, objectB) {
