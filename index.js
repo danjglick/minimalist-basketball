@@ -123,25 +123,28 @@ function handleTouchmove(e) {
 
 function decideEnemyPaths() {
   if (ball.yPos < canvas.height - (canvas.height / 5)) {
-    let closestToBallData = {
-      enemyId: -1,
-      distanceToBall: canvas.height + canvas.width
-    }
-    for (let i = 0; i < enemies.length; i++) {
-      let enemy = enemies[i]
-      let distanceToBall = getDistance(ball, enemy)
-      if (
-        closestToBallData.enemyId == -1 || 
-        distanceToBall < closestToBallData.distanceToBall
-      ) {
-        closestToBallData.enemyId = i
-        closestToBallData.distanceToBall = distanceToBall
-      }
-    }
-    let closestToBall = enemies[closestToBallData.enemyId]
+    let closestToBall = getClosestEnemyToBall()
     closestToBall.xVelocity = (ball.xPos - closestToBall.xPos) / ENEMY_SPEED_DIVISOR
     closestToBall.yVelocity = (ball.yPos - closestToBall.yPos) / ENEMY_SPEED_DIVISOR
   }
+}
+function getClosestEnemyToBall() {
+  let closestToBallData = { 
+    enemyId: -1, 
+    distanceToBall: canvas.height + canvas.width 
+  }
+  for (let i = 0; i < enemies.length; i++) {
+    let enemy = enemies[i]
+    let distanceToBall = getDistance(ball, enemy)
+    if (
+      closestToBallData.enemyId == -1 || 
+      distanceToBall < closestToBallData.distanceToBall
+    ) {
+      closestToBallData.enemyId = i
+      closestToBallData.distanceToBall = distanceToBall
+    }
+  }
+  return enemies[closestToBallData.enemyId]
 }
 
 function isBallInWall(wall) {
@@ -288,20 +291,13 @@ function addTeammate(touchstart) {
 }
 
 function isClose(objectA, objectB) {
-  return getDistance(objectA, objectB) < PIXEL_SHIM
+  return getDistance(objectA, objectB) < PIXEL_SHIM * 2
 }
 
 function calculateBallPath(target) {
   let xChange = ballPossessor.xPos - target.xPos
   let yChange = ballPossessor.yPos - target.yPos
-  let angle = getProjectionRadians(xChange, yChange, ENEMY_BALL_SPEED, GRAVITY)
-  let xSpeed = Math.cos(angle) * ENEMY_BALL_SPEED
-  let xVelocity = (ball.xPos <= canvas.width / 2) ? xSpeed : -xSpeed
-  let yVelocity = Math.sin(angle) * ENEMY_BALL_SPEED
-  return {
-    xVelocity: xVelocity,
-    yVelocity: yVelocity
-  }
+  return calculateXYVelocity(xChange, yChange, ENEMY_BALL_SPEED, GRAVITY)
 }
 
 function isPathClear(path, obstacles) {
@@ -310,10 +306,7 @@ function isPathClear(path, obstacles) {
     scout.xPos += path.xVelocity
     scout.yPos += path.yVelocity
     for (let j = 0; j < obstacles.length; j++) {
-      if (
-        Math.abs(scout.xPos - obstacles[j].xPos) < PIXEL_SHIM &&
-        Math.abs(scout.yPos - obstacles[j].yPos) < PIXEL_SHIM
-      ) {
+      if (isClose(scout, obstacles[j])) {
         return false    
       }
     }  
@@ -358,19 +351,25 @@ function executeBounceEffects() {
 
 /////////////////////////////////////////////////////////////////////
 
-function getProjectionRadians(xChange, yChange, speed, gravity) {
+function calculateXYVelocity(xChange, yChange, speed, gravity) {
   // https://physics.stackexchange.com/questions/56265/how-to-get-the-angle-needed-for-a-projectile-to-pass-through-a-given-point-for-t
-  return Math.atan(
+  let radians = Math.atan(
     (speed ** 2 / (gravity * xChange)) - 
     (
       (
-        (speed ** 2 * (speed ** 2 - 2 * GRAVITY * yChange)) / 
+        (speed ** 2 * (speed ** 2 - 2 * gravity * yChange)) / 
         (gravity ** 2 * xChange ** 2) 
       ) 
       - 1
     ) 
     ** 0.5
   )
+  let xVelocity = (ball.xPos <= canvas.width / 2 ? Math.cos(radians) : -Math.cos(radians)) * speed
+  let yVelocity = Math.sin(radians) * speed
+  return {
+    xVelocity: xVelocity,
+    yVelocity: yVelocity
+  }
 }
 
 function getDistance(objectA, objectB) {
