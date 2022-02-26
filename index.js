@@ -73,6 +73,8 @@ function initializeGame() {
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   decideEnemyPaths()
+  moveEnemies()
+  moveBall()
   for (let i = 0; i < Object.keys(WALLS).length; i++) {
     let wall = WALLS[Object.keys(WALLS)[i]]
     if (isBallInWall(wall)) {
@@ -91,8 +93,6 @@ function gameLoop() {
   if (isBallInHoop()) {
     handleBallInHoop()
   }
-  moveEnemies()
-  moveBall()
   drawHoop()
   drawEnemies()
   drawTeammates()
@@ -118,21 +118,22 @@ function handleTouchmove(e) {
   if (isThrowing) {
     ball.xVelocity = (e.touches[0].clientX - touchstart.xPos) / BALL_SPEED_DIVISOR
     ball.yVelocity = (e.touches[0].clientY - touchstart.yPos) / BALL_SPEED_DIVISOR
+    console.log(ball.yVelocity)
   }
 }
 
 function decideEnemyPaths() {
-  if (ball.yPos < canvas.height - (canvas.height / 5)) {
-    let closestEnemyToBall = getClosestEnemyToSpot(ball)
-    closestEnemyToBall.xVelocity = (ball.xPos - closestEnemyToBall.xPos) / ENEMY_SPEED_DIVISOR
-    closestEnemyToBall.yVelocity = (ball.yPos - closestEnemyToBall.yPos) / ENEMY_SPEED_DIVISOR
-  }
-  let openTeammate = getOpenTeammate()
-  if (openTeammate) {
-    let closestEnemyToOpenTeammate = getClosestEnemyToSpot(getOpenTeammate())
-    closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
-    closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR
-  }
+  // if (ball.yPos < canvas.height - (canvas.height / 5)) {
+  //   let closestEnemyToBall = getClosestEnemyToSpot(ball)
+  //   closestEnemyToBall.xVelocity = (ball.xPos - closestEnemyToBall.xPos) / ENEMY_SPEED_DIVISOR
+  //   closestEnemyToBall.yVelocity = (ball.yPos - closestEnemyToBall.yPos) / ENEMY_SPEED_DIVISOR
+  // }
+  // let openTeammate = getOpenTeammate()
+  // if (openTeammate) {
+  //   let closestEnemyToOpenTeammate = getClosestEnemyToSpot(getOpenTeammate())
+  //   closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
+  //   closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR
+  // }
 }
 
 function isBallInWall(wall) {
