@@ -55,7 +55,8 @@ let touchstart = {
   xPos: 0,
   yPos: 0
 }
-let score = 0
+let redScore = 0
+let blueScore = 0
 let isThrowing = false
 let offensiveTeam = teammates
 let ballPossessor = {}
@@ -99,6 +100,8 @@ function gameLoop() {
   drawBall()
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
+
+//////////
 
 function handleTouchstart(e) {
   touchstart.xPos = e.touches[0].clientX
@@ -220,8 +223,14 @@ function isBallInHoop() {
 }
 
 function handleBallInHoop() {
-  score += 1
-  document.getElementById("score").innerHTML = String(score)
+  if (teammates.includes(ballPossessor)) {
+    blueScore += 1
+    document.getElementById("blueScore").innerHTML = String(blueScore)
+  } else {
+    redScore += 1
+    document.getElementById("redScore").innerHTML = String(redScore)
+  }
+  
   document.getElementById("swish").play()
 }
 
@@ -271,7 +280,7 @@ function drawBall() {
   context.fill()
 }
 
-///////////////
+////////////////////////
 
 function addTeammate(touchstart) {
   teammates.push({

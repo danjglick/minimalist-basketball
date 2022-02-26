@@ -2,6 +2,14 @@ body {
   background-color: DimGray;
 }
 
-#score {
-  color: white;
+#blueScore {
+  color: Cornflowerblue;
+}
+
+#redScore {
+  color: IndianRed;
+}
+
+#scoreMedian {
+  color: White;
 }
