@@ -118,7 +118,6 @@ function handleTouchmove(e) {
   if (isThrowing) {
     ball.xVelocity = (e.touches[0].clientX - touchstart.xPos) / BALL_SPEED_DIVISOR
     ball.yVelocity = (e.touches[0].clientY - touchstart.yPos) / BALL_SPEED_DIVISOR
-    console.log(ball.yVelocity)
   }
 }
 
@@ -131,8 +130,13 @@ function decideEnemyPaths() {
   let openTeammate = getOpenTeammate()
   if (openTeammate) {
     let closestEnemyToOpenTeammate = getClosestEnemyToSpot(getOpenTeammate())
-    closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
-    closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR
+    if (!isClose(closestEnemyToOpenTeammate, openTeammate)) {
+      closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
+      closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR  
+    } else {
+      closestEnemyToOpenTeammate.xVelocity = 0
+      closestEnemyToOpenTeammate.yVelocity = 0 
+    }
   }
 }
 
