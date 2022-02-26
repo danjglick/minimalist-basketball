@@ -123,17 +123,17 @@ function handleTouchmove(e) {
 }
 
 function decideEnemyPaths() {
-  // if (ball.yPos < canvas.height - (canvas.height / 5)) {
-  //   let closestEnemyToBall = getClosestEnemyToSpot(ball)
-  //   closestEnemyToBall.xVelocity = (ball.xPos - closestEnemyToBall.xPos) / ENEMY_SPEED_DIVISOR
-  //   closestEnemyToBall.yVelocity = (ball.yPos - closestEnemyToBall.yPos) / ENEMY_SPEED_DIVISOR
-  // }
-  // let openTeammate = getOpenTeammate()
-  // if (openTeammate) {
-  //   let closestEnemyToOpenTeammate = getClosestEnemyToSpot(getOpenTeammate())
-  //   closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
-  //   closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR
-  // }
+  if (ball.yPos < canvas.height - (canvas.height / 5)) {
+    let closestEnemyToBall = getClosestEnemyToSpot(ball)
+    closestEnemyToBall.xVelocity = (ball.xPos - closestEnemyToBall.xPos) / ENEMY_SPEED_DIVISOR
+    closestEnemyToBall.yVelocity = (ball.yPos - closestEnemyToBall.yPos) / ENEMY_SPEED_DIVISOR
+  }
+  let openTeammate = getOpenTeammate()
+  if (openTeammate) {
+    let closestEnemyToOpenTeammate = getClosestEnemyToSpot(getOpenTeammate())
+    closestEnemyToOpenTeammate.xVelocity = (openTeammate.xPos - closestEnemyToOpenTeammate.xPos) / ENEMY_SPEED_DIVISOR
+    closestEnemyToOpenTeammate.yVelocity = (openTeammate.yPos - closestEnemyToOpenTeammate.yPos) / ENEMY_SPEED_DIVISOR
+  }
 }
 
 function isBallInWall(wall) {
