@@ -366,7 +366,7 @@ function bounceBallLeft() {
 }
 
 function bounceBallDown() {
-  ball.yVelocity = Math.abs(ball.yVelocity) + (ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR)
+  ball.yVelocity = Math.abs(ball.yVelocity) - (ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR)
   executeBounceEffects()
 }
 
